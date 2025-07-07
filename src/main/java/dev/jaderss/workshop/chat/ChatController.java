@@ -1,5 +1,6 @@
 package dev.jaderss.workshop.chat;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,13 +8,10 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Flux;
 
 @RestController
+@RequiredArgsConstructor
 class ChatController {
 
     private final ChatClient chatClient;
-
-    ChatController(ChatClient.Builder builder) {
-        this.chatClient = builder.build();
-    }
 
     @GetMapping("/chat")
     public String chat() {
