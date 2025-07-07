@@ -1,0 +1,15 @@
+### GET request to example server
+GET localhost:8080/chat
+### GET request to example server
+GET localhost:8080/stream
+###
+GET localhost:8080/joke
+###
+GET localhost:8080/acme/chat?message=What are te top 5 NBA teams?
+###
+GET localhost:8080/acme/chat?message=How to transfer to external account?
+###
+GET localhost:8080/posts/new?topic=dogs
+###
+GET localhost:8080/posts/new
+###
