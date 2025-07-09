@@ -1,4 +1,6 @@
 package dev.jaderss.workshop.output;
 
-public record Activity() {
+import java.sql.Time;
+
+public record Activity(String activity, String location, String day, String time) {
 }
