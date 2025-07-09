@@ -13,3 +13,7 @@ GET localhost:8080/posts/new?topic=dogs
 ###
 GET localhost:8080/posts/new
 ###
+GET localhost:8080/vacation/unstructured
+###
+GET localhost:8080/vacation/structured
+###
