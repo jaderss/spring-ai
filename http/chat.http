@@ -17,3 +17,5 @@ GET localhost:8080/vacation/unstructured
 ###
 GET localhost:8080/vacation/structured
 ###
+GET localhost:8080/image-to-text
+###
