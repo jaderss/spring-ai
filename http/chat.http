@@ -19,3 +19,7 @@ GET localhost:8080/vacation/structured
 ###
 GET localhost:8080/image-to-text
 ###
+GET localhost:8080/generate-image
+###
+GET localhost:8080/generate-image?prompt=View of Paris
+###
