@@ -8,6 +8,7 @@ class SpringAiWorkshopApplicationTests {
 
     @Test
     void contextLoads() {
+        // Test container is loading correctly
     }
 
 }
