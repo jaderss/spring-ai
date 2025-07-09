@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-public class ImageDetectionController {
+class ImageDetectionController {
 
     @Value("classpath:images/34312498-1caf-41f3-a9c6-4f80e9a3f53a-1400.jpg")
     private Resource image;
