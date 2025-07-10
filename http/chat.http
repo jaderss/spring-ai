@@ -23,3 +23,7 @@ GET localhost:8080/generate-image
 ###
 GET localhost:8080/generate-image?prompt=View of Paris
 ###
+GET localhost:8080/speak
+###
+GET localhost:8080/speak?prompt=This is a test generating speech from a text prompt.
+###

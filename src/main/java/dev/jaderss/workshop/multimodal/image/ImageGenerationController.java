@@ -1,4 +1,4 @@
-package dev.jaderss.workshop.multimodal;
+package dev.jaderss.workshop.multimodal.image;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.image.ImageOptions;
