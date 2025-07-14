@@ -27,3 +27,5 @@ GET localhost:8080/speak
 ###
 GET localhost:8080/speak?prompt=This is a test generating speech from a text prompt.
 ###
+GET localhost:8080/memory?message=What's my name?
+###
