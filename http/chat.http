@@ -33,3 +33,5 @@ GET localhost:8080/models
 ###
 GET localhost:8080/models/stuff-the-prompt
 ###
+GET localhost:8080/rag/models
+###
