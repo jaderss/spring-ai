@@ -1,6 +1,5 @@
 package dev.jaderss.workshop.rag;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -14,15 +13,17 @@ public class ModelsController {
     private final ChatClient chatClient;
 
     public ModelsController(ChatClient.Builder builder, VectorStore vectorStore) {
-        this.chatClient = builder.defaultAdvisors(new QuestionAnswerAdvisor(vectorStore)).build();
+        this.chatClient = builder.defaultAdvisors(
+                        QuestionAnswerAdvisor.builder(vectorStore).build())
+                .build();
     }
 
-
     @GetMapping("/rag/models")
-    public Models models(@RequestParam(value = "message", defaultValue = "Give me a list of all models from OpenAI along with their context window.") String message) {
-        return chatClient.prompt()
-                .user(message)
-                .call()
-                .entity(Models.class);
+    public Models models(
+            @RequestParam(
+                            value = "message",
+                            defaultValue = "Give me a list of all models from OpenAI along with their context window.")
+                    String message) {
+        return chatClient.prompt().user(message).call().entity(Models.class);
     }
 }

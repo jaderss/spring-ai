@@ -15,17 +15,19 @@ class MemoryController {
     private final ChatClient chatClient;
 
     MemoryController(ChatClient.Builder builder, ChatMemory chatMemory) {
-        this.chatClient = builder
-                .defaultAdvisors(MessageChatMemoryAdvisor.builder(chatMemory).build())
+        this.chatClient = builder.defaultAdvisors(
+                        MessageChatMemoryAdvisor.builder(chatMemory).build())
                 .build();
     }
 
     @GetMapping("/memory")
-    public String getMemory(@RequestParam String message) {
-        return chatClient.prompt()
+    public String getMemory(
+            @RequestParam String message, @RequestParam(defaultValue = "default") String conversationId) {
+        return chatClient
+                .prompt()
                 .user(message)
+                .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, conversationId))
                 .call()
                 .content();
     }
-
 }

@@ -1,6 +1,5 @@
 package dev.jaderss.workshop.output;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -8,7 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/")
-@RequiredArgsConstructor
 class VacationPlanController {
 
     public static final String VACATION_PLAN = """
@@ -25,6 +23,10 @@ class VacationPlanController {
 
     private final ChatClient chatClient;
 
+    VacationPlanController(ChatClient chatClient) {
+        this.chatClient = chatClient;
+    }
+
     @GetMapping("/vacation/unstructured")
     public String unstructured() {
         return chatClient.prompt().user(VACATION_PLAN).call().content();
@@ -34,5 +36,4 @@ class VacationPlanController {
     public Itinerary structured() {
         return chatClient.prompt().user(VACATION_PLAN).call().entity(Itinerary.class);
     }
-
 }

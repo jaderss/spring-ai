@@ -1,6 +1,6 @@
 package dev.jaderss.workshop.multimodal.image;
 
-import lombok.RequiredArgsConstructor;
+import java.util.Map;
 import org.springframework.ai.image.ImageOptions;
 import org.springframework.ai.image.ImagePrompt;
 import org.springframework.ai.image.ImageResponse;
@@ -12,14 +12,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Map;
-
 @RestController
 @RequestMapping("/")
-@RequiredArgsConstructor
 class ImageGenerationController {
 
     private final OpenAiImageModel imageModel;
+
+    ImageGenerationController(OpenAiImageModel imageModel) {
+        this.imageModel = imageModel;
+    }
 
     @GetMapping("/generate-image")
     public ResponseEntity<Map<String, String>> generateImage(

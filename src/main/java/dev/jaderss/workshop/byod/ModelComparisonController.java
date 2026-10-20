@@ -1,17 +1,19 @@
 package dev.jaderss.workshop.byod;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/")
-@RequiredArgsConstructor
 class ModelComparisonController {
 
     private final ChatClient chatClient;
+
+    ModelComparisonController(ChatClient chatClient) {
+        this.chatClient = chatClient;
+    }
 
     private static final String CONTEXT_WINDOW = """
             If you are asked about the context window of a model, here is an up to date list of popular LLMs and their current context window:
@@ -133,7 +135,8 @@ class ModelComparisonController {
 
     @GetMapping("/models")
     public String models() {
-        return chatClient.prompt()
+        return chatClient
+                .prompt()
                 .user("Can you give me an up to date list of popular LLMs and their current context window?")
                 .call()
                 .content();
@@ -141,11 +144,11 @@ class ModelComparisonController {
 
     @GetMapping("/models/stuff-the-prompt")
     public String modelsStuffThePrompt() {
-        return chatClient.prompt()
+        return chatClient
+                .prompt()
                 .system(CONTEXT_WINDOW)
                 .user("Can you give me an up to date list of popular LLMs and their current context window?")
                 .call()
                 .content();
     }
-
 }
