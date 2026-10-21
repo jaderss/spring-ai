@@ -9,10 +9,10 @@
         <relativePath/>
     </parent>
     <groupId>dev.jaderss</groupId>
-    <artifactId>spring-ai-workshop</artifactId>
+    <artifactId>banking-assistant</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>spring-ai-workshop</name>
-    <description>spring-ai-workshop</description>
+    <name>banking-assistant</name>
+    <description>Banking assistant built on Spring AI</description>
 
     <properties>
         <java.version>25</java.version>
