@@ -30,6 +30,9 @@ class TransferConcurrencyTest {
     private TransferService transferService;
 
     @Autowired
+    private TransferProposalService proposalService;
+
+    @Autowired
     private AccountRepository accounts;
 
     @Autowired
@@ -53,6 +56,43 @@ class TransferConcurrencyTest {
         assertThat(outcomes).filteredOn(Boolean::booleanValue).hasSize(10);
         assertThat(accounts.findByNumber(SOURCE).orElseThrow().balance()).isEqualTo(Money.of("0", "USD"));
         assertThat(accounts.findByNumber(TARGET).orElseThrow().balance()).isEqualTo(Money.of("100", "USD"));
+    }
+
+    @Test
+    void concurrentReplaysOfOneConfirmationPostOnlyOnce() throws Exception {
+        jdbc.sql("insert into customer (id, full_name) values ('CUST-9002', 'Replay Test')")
+                .update();
+        jdbc.sql("""
+                        insert into account (number, customer_id, type, currency, balance, opened_at) values
+                            ('TEST-CHK-0002', 'CUST-9002', 'CHECKING', 'USD', 100.00, now()),
+                            ('TEST-SAV-0002', 'CUST-9002', 'SAVINGS', 'USD', 0.00, now())
+                        """).update();
+        CustomerId customer = new CustomerId("CUST-9002");
+        TransferProposal proposal = proposalService.propose(
+                customer,
+                new AccountNumber("TEST-CHK-0002"),
+                new AccountNumber("TEST-SAV-0002"),
+                Money.of("30", "USD"));
+        List<Callable<Confirmation>> replays = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            replays.add(() -> proposalService.confirm(customer, proposal.id(), "same-key-0001"));
+        }
+
+        List<Confirmation> confirmations = new ArrayList<>();
+        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            for (Future<Confirmation> confirmation : executor.invokeAll(replays)) {
+                confirmations.add(confirmation.get());
+            }
+        }
+
+        assertThat(confirmations)
+                .extracting(c -> c.transfer().id())
+                .containsOnly(confirmations.getFirst().transfer().id());
+        assertThat(confirmations).filteredOn(c -> !c.replayed()).hasSize(1);
+        assertThat(accounts.findByNumber(new AccountNumber("TEST-CHK-0002"))
+                        .orElseThrow()
+                        .balance())
+                .isEqualTo(Money.of("70", "USD"));
     }
 
     private boolean transferTen() {

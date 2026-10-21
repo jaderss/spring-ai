@@ -20,16 +20,23 @@ public class TransactionRepository {
         this.jdbc = jdbc;
     }
 
-    public List<Transaction> findByAccount(AccountNumber account, Instant from, Instant toExclusive) {
+    public List<Transaction> search(TransactionSearch search) {
         return jdbc.sql("""
                         select id, account_number, posted_at, description, memo, amount, currency
                         from account_transaction
-                        where account_number = :account and posted_at >= :from and posted_at < :to
+                        where account_number = :account
+                          and posted_at >= :from and posted_at < :to
+                          and (cast(:merchant as text) is null
+                               or position(lower(cast(:merchant as text)) in lower(description)) > 0)
+                          and (cast(:amount as numeric) is null or abs(amount) = cast(:amount as numeric))
                         order by posted_at desc
+                        limit 100
                         """)
-                .param("account", account.value())
-                .param("from", utc(from))
-                .param("to", utc(toExclusive))
+                .param("account", search.account().value())
+                .param("from", utc(search.from()))
+                .param("to", utc(search.toExclusive()))
+                .param("merchant", search.merchant())
+                .param("amount", search.amount())
                 .query(TransactionRepository::transaction)
                 .list();
     }

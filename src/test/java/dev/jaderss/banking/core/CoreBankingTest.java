@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 import dev.jaderss.banking.core.TransferRejectedException.Reason;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -22,6 +23,8 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 @Import(BankingTestConfiguration.class)
 class CoreBankingTest {
 
+    private static final Instant SEPTEMBER = Instant.parse("2026-09-01T00:00:00Z");
+    private static final Instant OCTOBER = Instant.parse("2026-10-01T00:00:00Z");
     private static final AccountNumber ADA_CHECKING = new AccountNumber("ACME-CHK-0001");
     private static final AccountNumber ADA_SAVINGS = new AccountNumber("ACME-SAV-0001");
     private static final AccountNumber ADA_EURO = new AccountNumber("ACME-CHK-0003");
@@ -61,10 +64,31 @@ class CoreBankingTest {
 
     @Test
     void findsTransactionsInsideDateRangeNewestFirst() {
-        assertThat(transactions.findByAccount(
-                        ADA_CHECKING, Instant.parse("2026-10-01T00:00:00Z"), Instant.parse("2026-10-07T00:00:00Z")))
+        assertThat(transactions.search(TransactionSearch.between(
+                        ADA_CHECKING, Instant.parse("2026-10-01T00:00:00Z"), Instant.parse("2026-10-07T00:00:00Z"))))
                 .extracting(Transaction::description)
                 .containsExactly("Mock Fuel Station", "Example Coffee Roasters", "Example Corp Payroll");
+    }
+
+    @Test
+    void searchFiltersByMerchantIgnoringCase() {
+        assertThat(transactions.search(new TransactionSearch(ADA_CHECKING, SEPTEMBER, OCTOBER, "grocery", null)))
+                .extracting(Transaction::amount)
+                .containsExactly(Money.of("-64.10", "USD"), Money.of("-86.40", "USD"));
+    }
+
+    @Test
+    void searchFiltersByAmountRegardlessOfSign() {
+        assertThat(transactions.search(
+                        new TransactionSearch(ADA_CHECKING, SEPTEMBER, OCTOBER, null, new BigDecimal("-4.75"))))
+                .extracting(Transaction::description)
+                .containsExactly("Example Coffee Roasters");
+    }
+
+    @Test
+    void searchTreatsLikeWildcardsAsPlainText() {
+        assertThat(transactions.search(new TransactionSearch(ADA_CHECKING, SEPTEMBER, OCTOBER, "%", null)))
+                .isEmpty();
     }
 
     @Test
@@ -133,6 +157,6 @@ class CoreBankingTest {
     }
 
     private List<Transaction> postedNow(AccountNumber number) {
-        return transactions.findByAccount(number, NOW, NOW.plusSeconds(1));
+        return transactions.search(TransactionSearch.between(number, NOW, NOW.plusSeconds(1)));
     }
 }

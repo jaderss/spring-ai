@@ -7,7 +7,10 @@ public class TransferRejectedException extends RuntimeException {
         SAME_ACCOUNT,
         NOT_POSITIVE,
         CURRENCY_MISMATCH,
-        INSUFFICIENT_FUNDS
+        INSUFFICIENT_FUNDS,
+        PROPOSAL_NOT_FOUND,
+        PROPOSAL_EXPIRED,
+        ALREADY_CONFIRMED
     }
 
     private final Reason reason;

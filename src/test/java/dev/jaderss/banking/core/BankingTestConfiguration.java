@@ -14,7 +14,9 @@ import org.springframework.context.annotation.Import;
     AccountRepository.class,
     TransactionRepository.class,
     TransferRepository.class,
-    TransferService.class
+    TransferService.class,
+    TransferProposalRepository.class,
+    TransferProposalService.class
 })
 class BankingTestConfiguration {
 
