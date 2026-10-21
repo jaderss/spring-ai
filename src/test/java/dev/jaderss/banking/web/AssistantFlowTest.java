@@ -96,6 +96,20 @@ class AssistantFlowTest {
     }
 
     @Test
+    void unexpectedFailureIsAGenericProblemWithoutInternalDetails() {
+        ResponseEntity<ProblemDetail> response = client.post()
+                .uri("/assistant/chat")
+                .header(Headers.CUSTOMER, "CUST-0001")
+                .body(new AssistantRequest("test", "The scripted model has no reply left"))
+                .retrieve()
+                .toEntity(ProblemDetail.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
+        assertThat(response.getBody().getTitle()).isEqualTo("Internal error");
+        assertThat(response.getBody().getDetail()).doesNotContain("scripted");
+    }
+
+    @Test
     void toolsCannotReadAnotherCustomersAccount() {
         model.thenCallTool("getBalance", "{\"accountNumber\":\"ACME-CHK-0002\"}")
                 .thenReply("I could not find it.");

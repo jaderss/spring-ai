@@ -89,6 +89,15 @@ class TransferProposalServiceTest {
     }
 
     @Test
+    void reusingAnIdempotencyKeyForAnotherProposalIsRejected() {
+        TransferProposal first = service.propose(ADA, ADA_CHECKING, ADA_SAVINGS, Money.of("10", "USD"));
+        TransferProposal second = service.propose(ADA, ADA_CHECKING, ADA_SAVINGS, Money.of("20", "USD"));
+        service.confirm(ADA, first.id(), "key-0000008");
+
+        assertRejected(() -> service.confirm(ADA, second.id(), "key-0000008"), Reason.IDEMPOTENCY_KEY_REUSED);
+    }
+
+    @Test
     void anotherCustomerCannotConfirmTheProposal() {
         TransferProposal proposal = service.propose(ADA, ADA_CHECKING, ADA_SAVINGS, Money.of("100", "USD"));
 

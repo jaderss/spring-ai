@@ -10,7 +10,8 @@ public class TransferRejectedException extends RuntimeException {
         INSUFFICIENT_FUNDS,
         PROPOSAL_NOT_FOUND,
         PROPOSAL_EXPIRED,
-        ALREADY_CONFIRMED
+        ALREADY_CONFIRMED,
+        IDEMPOTENCY_KEY_REUSED
     }
 
     private final Reason reason;

@@ -3,6 +3,7 @@ package dev.jaderss.banking.core;
 import static dev.jaderss.banking.core.TransferRejectedException.Reason.ACCOUNT_NOT_FOUND;
 import static dev.jaderss.banking.core.TransferRejectedException.Reason.ALREADY_CONFIRMED;
 import static dev.jaderss.banking.core.TransferRejectedException.Reason.CURRENCY_MISMATCH;
+import static dev.jaderss.banking.core.TransferRejectedException.Reason.IDEMPOTENCY_KEY_REUSED;
 import static dev.jaderss.banking.core.TransferRejectedException.Reason.NOT_POSITIVE;
 import static dev.jaderss.banking.core.TransferRejectedException.Reason.PROPOSAL_EXPIRED;
 import static dev.jaderss.banking.core.TransferRejectedException.Reason.PROPOSAL_NOT_FOUND;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -92,7 +94,12 @@ public class TransferProposalService {
             throw new TransferRejectedException(PROPOSAL_EXPIRED, "proposal expired, ask for a new one");
         }
         Transfer transfer = transferService.transfer(proposal.from(), proposal.to(), proposal.amount());
-        proposals.markConfirmed(proposal.id(), transfer.id(), idempotencyKey);
+        try {
+            proposals.markConfirmed(proposal.id(), transfer.id(), idempotencyKey);
+        } catch (DuplicateKeyException e) {
+            throw new TransferRejectedException(
+                    IDEMPOTENCY_KEY_REUSED, "Idempotency-Key was already used for another proposal");
+        }
         return new Confirmation(transfer, false);
     }
 }

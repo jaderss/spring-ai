@@ -52,7 +52,7 @@ For development, `./mvnw spring-boot:run` starts only Postgres through Spring Bo
 ## Guardrails
 
 - **The customer comes from the request, never from the model.** It reaches the tools through Spring AI's tool context, so no prompt can make a tool act for another customer. Accounts of other customers are reported as not found.
-- **The model can only propose a transfer.** `initiateTransfer` records a proposal that expires after ten minutes. Money moves only when the customer confirms it over HTTP with an `Idempotency-Key`; the proposal row is locked during confirmation, and replaying the same key returns the original transfer without posting again. Transfers lock both accounts in a fixed order, so concurrent transfers cannot overdraw an account.
+- **The model can only propose a transfer.** `initiateTransfer` records a proposal that expires after ten minutes. Money moves only when the customer confirms it over HTTP with an `Idempotency-Key`; the proposal row is locked during confirmation, replaying the same key returns the original transfer without posting again, and reusing a key for another proposal is rejected with `422`. Transfers lock both accounts in a fixed order, so concurrent transfers cannot overdraw an account.
 - **Personal data stays out of the model.** A `PiiAdvisor` replaces account numbers and customer names with per-conversation tokens such as `ACCT_1` and `NAME_1` before chat memory or the model see a message, and restores them in the reply. Tools translate tokens back on input and tokenize their results and error messages, so the model and the stored conversation only ever hold tokens.
 - **Tool results are data.** Transaction memos are third-party text. A seeded memo carries a prompt injection that tells the model to move 5000 USD; a test drives a compromised model that obeys it and shows the model received only redacted data, no money moved, and the customer still has to confirm the proposal.
 - **The model never does money arithmetic.** The spending summary asks the model only to categorize transactions; the output is validated so every transaction appears exactly once, invalid output is retried with the problem quoted back, and the totals are computed from stored amounts.
@@ -60,7 +60,7 @@ For development, `./mvnw spring-boot:run` starts only Postgres through Spring Bo
 
 ## MCP server
 
-Under the `mcp` profile the same banking tools are exposed through the Spring AI MCP server over Streamable HTTP at `/mcp`, acting for one configured customer (`banking.mcp.customer-id`). Transfers stay proposals that the customer confirms in the app.
+Under the `mcp` profile the same banking tools are exposed through the Spring AI MCP server over Streamable HTTP at `/mcp`, acting for one configured customer (`banking.mcp.customer-id`). The profile has no authentication of its own, so it binds to `127.0.0.1` only. Transfers stay proposals that the customer confirms in the app.
 
 ```bash
 SPRING_PROFILES_ACTIVE=mcp ./mvnw spring-boot:run
@@ -82,6 +82,12 @@ Claude Desktop connects through the `mcp-remote` bridge. Add this to `claude_des
 ## Observability
 
 Every request carries a correlation id from `X-Correlation-Id`, or a generated one. It appears on every log line of the request and as a high-cardinality key on every Micrometer observation, from the chat client call through each model call and tool execution. Replies report the tokens used across all model calls of the request, and the `banking.assistant.tokens` metric records them. `/actuator/health` and `/actuator/metrics` are exposed. Prompt and completion logging stays off, so no customer data reaches the logs through Spring AI.
+
+## Limitations
+
+Conversation state lives in memory: Spring AI's in-memory chat memory and the per-conversation token vault both grow with the number of conversations and are lost on restart. A production deployment would keep chat memory in Postgres with Spring AI's JDBC repository and persist the token mappings alongside it, so that stored tokens can always be restored.
+
+`X-Customer-Id` stands in for authentication. The service must sit behind a gateway that authenticates the customer and sets it.
 
 ## Tests and evaluation
 
