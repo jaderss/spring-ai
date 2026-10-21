@@ -34,4 +34,10 @@ class PiiVaultTest {
         assertThat(vault.tokenize(null)).isNull();
         assertThat(vault.reveal(null)).isNull();
     }
+
+    @Test
+    void passThroughVaultLeavesTextUnchanged() {
+        assertThat(PiiVault.passThrough().tokenize("Ada Example owns ACME-CHK-0001"))
+                .isEqualTo("Ada Example owns ACME-CHK-0001");
+    }
 }

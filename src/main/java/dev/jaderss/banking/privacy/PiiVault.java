@@ -12,6 +12,7 @@ public final class PiiVault {
     private static final Pattern ACCOUNT_NUMBER = Pattern.compile("\\b[A-Z]{4}-[A-Z]{3}-\\d{4}\\b");
     private static final Pattern TOKEN = Pattern.compile("\\b(?:ACCT|NAME)_\\d+\\b");
 
+    private final boolean enabled;
     private final List<String> names;
     private final Map<String, String> tokenByValue = new HashMap<>();
     private final Map<String, String> valueByToken = new HashMap<>();
@@ -19,15 +20,24 @@ public final class PiiVault {
     private int nameCount;
 
     PiiVault(List<String> knownNames) {
+        this(knownNames, true);
+    }
+
+    private PiiVault(List<String> knownNames, boolean enabled) {
+        this.enabled = enabled;
         this.names = knownNames.stream()
                 .filter(name -> !name.isBlank())
                 .sorted(Comparator.comparingInt(String::length).reversed())
                 .toList();
     }
 
+    public static PiiVault passThrough() {
+        return new PiiVault(List.of(), false);
+    }
+
     public synchronized String tokenize(String text) {
-        if (text == null) {
-            return null;
+        if (text == null || !enabled) {
+            return text;
         }
         String masked = text;
         for (String name : names) {
