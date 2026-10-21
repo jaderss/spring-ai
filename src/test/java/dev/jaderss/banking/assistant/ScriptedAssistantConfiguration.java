@@ -1,6 +1,7 @@
 package dev.jaderss.banking.assistant;
 
 import dev.jaderss.banking.TestcontainersConfiguration;
+import dev.jaderss.banking.observability.RecordingObservationHandler;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -18,6 +19,11 @@ public class ScriptedAssistantConfiguration {
     @Bean
     ScriptedChatModel scriptedChatModel() {
         return new ScriptedChatModel();
+    }
+
+    @Bean
+    RecordingObservationHandler recordingObservationHandler() {
+        return new RecordingObservationHandler();
     }
 
     @Bean

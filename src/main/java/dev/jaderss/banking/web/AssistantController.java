@@ -31,6 +31,7 @@ public class AssistantController {
         return new AssistantReply(
                 answer.text(),
                 answer.sources(),
+                answer.usage(),
                 proposals.pending(customer).stream().map(ProposalView::of).toList());
     }
 
@@ -50,5 +51,9 @@ public class AssistantController {
         }
     }
 
-    public record AssistantReply(String reply, List<String> sources, List<ProposalView> pendingProposals) {}
+    public record AssistantReply(
+            String reply,
+            List<String> sources,
+            BankingAssistant.TokenUsage usage,
+            List<ProposalView> pendingProposals) {}
 }

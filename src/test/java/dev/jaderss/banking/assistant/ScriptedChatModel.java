@@ -6,6 +6,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.CopyOnWriteArrayList;
 import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.metadata.ChatResponseMetadata;
+import org.springframework.ai.chat.metadata.DefaultUsage;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
@@ -14,6 +16,9 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.model.tool.ToolCallingChatOptions;
 
 public class ScriptedChatModel implements ChatModel {
+
+    public static final int INPUT_TOKENS_PER_CALL = 100;
+    public static final int OUTPUT_TOKENS_PER_CALL = 20;
 
     private final Deque<AssistantMessage> script = new ConcurrentLinkedDeque<>();
     private final List<Prompt> prompts = new CopyOnWriteArrayList<>();
@@ -48,7 +53,11 @@ public class ScriptedChatModel implements ChatModel {
         if (next == null) {
             throw new IllegalStateException("the scripted conversation has no reply left");
         }
-        return new ChatResponse(List.of(new Generation(next)));
+        return new ChatResponse(
+                List.of(new Generation(next)),
+                ChatResponseMetadata.builder()
+                        .usage(new DefaultUsage(INPUT_TOKENS_PER_CALL, OUTPUT_TOKENS_PER_CALL))
+                        .build());
     }
 
     @Override
