@@ -1,0 +1,16 @@
+include:
+  - compose/postgres.yaml
+
+services:
+  banking-assistant:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - 'OPENAI_API_KEY=${OPENAI_API_KEY:?set OPENAI_API_KEY}'
+      - 'SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/banking'
+      - 'SPRING_DATASOURCE_USERNAME=banking'
+      - 'SPRING_DATASOURCE_PASSWORD=local-only'
+    ports:
+      - '8080:8080'
