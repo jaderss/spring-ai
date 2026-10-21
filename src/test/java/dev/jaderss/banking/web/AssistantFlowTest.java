@@ -104,7 +104,8 @@ class AssistantFlowTest {
         assertThat(lastToolResults())
                 .singleElement()
                 .asString()
-                .contains("no account ACME-CHK-0002")
+                .contains("no account ACCT_")
+                .doesNotContain("ACME-CHK-0002")
                 .doesNotContain("708");
     }
 

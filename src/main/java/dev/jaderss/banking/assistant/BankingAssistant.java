@@ -2,6 +2,9 @@ package dev.jaderss.banking.assistant;
 
 import dev.jaderss.banking.core.CustomerId;
 import dev.jaderss.banking.knowledge.KnowledgeBaseLoader;
+import dev.jaderss.banking.privacy.PiiAdvisor;
+import dev.jaderss.banking.privacy.PiiVault;
+import dev.jaderss.banking.privacy.PiiVaults;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
@@ -22,6 +25,7 @@ import org.springframework.stereotype.Service;
 public class BankingAssistant {
 
     private final ChatClient chatClient;
+    private final PiiVaults vaults;
     private final Clock clock;
 
     public BankingAssistant(
@@ -29,11 +33,13 @@ public class BankingAssistant {
             ChatMemory chatMemory,
             BankingTools tools,
             VectorStore vectorStore,
+            PiiVaults vaults,
             Clock clock,
             @Value("classpath:prompts/assistant-system.st") Resource systemPrompt) {
         this.chatClient = builder.defaultSystem(systemPrompt)
                 .defaultTools(tools)
                 .defaultAdvisors(
+                        new PiiAdvisor(),
                         MessageChatMemoryAdvisor.builder(chatMemory).build(),
                         QuestionAnswerAdvisor.builder(vectorStore)
                                 .searchRequest(SearchRequest.builder()
@@ -42,16 +48,20 @@ public class BankingAssistant {
                                         .build())
                                 .build())
                 .build();
+        this.vaults = vaults;
         this.clock = clock;
     }
 
     public Answer reply(CustomerId customer, String conversationId, String message) {
+        String conversation = customer.value() + "/" + conversationId;
+        PiiVault vault = vaults.forConversation(conversation);
         ChatClientResponse response = chatClient
                 .prompt()
                 .system(system -> system.param("today", LocalDate.now(clock).toString()))
                 .user(message)
-                .toolContext(Map.of(BankingTools.CUSTOMER, customer))
-                .advisors(advisor -> advisor.param(ChatMemory.CONVERSATION_ID, customer.value() + "/" + conversationId))
+                .toolContext(Map.of(BankingTools.CUSTOMER, customer, BankingTools.VAULT, vault))
+                .advisors(advisor ->
+                        advisor.param(ChatMemory.CONVERSATION_ID, conversation).param(PiiAdvisor.VAULT, vault))
                 .call()
                 .chatClientResponse();
         return new Answer(response.chatResponse().getResult().getOutput().getText(), sources(response));

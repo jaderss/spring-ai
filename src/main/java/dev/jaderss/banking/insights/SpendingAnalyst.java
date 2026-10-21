@@ -9,6 +9,8 @@ import dev.jaderss.banking.core.Transaction;
 import dev.jaderss.banking.core.TransactionRepository;
 import dev.jaderss.banking.core.TransactionSearch;
 import dev.jaderss.banking.insights.SpendingAnalysis.CategorizedTransaction;
+import dev.jaderss.banking.privacy.PiiVault;
+import dev.jaderss.banking.privacy.PiiVaults;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -35,6 +37,7 @@ public class SpendingAnalyst {
     private final AccountRepository accounts;
     private final TransactionRepository transactions;
     private final JsonMapper jsonMapper;
+    private final PiiVaults vaults;
     private final BeanOutputConverter<SpendingAnalysis> converter = new BeanOutputConverter<>(SpendingAnalysis.class);
 
     public SpendingAnalyst(
@@ -42,11 +45,13 @@ public class SpendingAnalyst {
             AccountRepository accounts,
             TransactionRepository transactions,
             JsonMapper jsonMapper,
+            PiiVaults vaults,
             @Value("classpath:prompts/spending-analyst.st") Resource systemPrompt) {
         this.chatClient = builder.defaultSystem(systemPrompt).build();
         this.accounts = accounts;
         this.transactions = transactions;
         this.jsonMapper = jsonMapper;
+        this.vaults = vaults;
     }
 
     public MonthlySpendingSummary summarize(CustomerId customer, AccountNumber number, YearMonth month) {
@@ -62,11 +67,12 @@ public class SpendingAnalyst {
     }
 
     private SpendingAnalysis analyze(List<Transaction> monthTransactions) {
+        PiiVault vault = vaults.newVault();
         String listing = jsonMapper.writeValueAsString(monthTransactions.stream()
                 .map(transaction -> new TransactionLine(
                         transaction.id(),
                         transaction.postedAt().atOffset(ZoneOffset.UTC).toLocalDate(),
-                        transaction.description(),
+                        vault.tokenize(transaction.description()),
                         transaction.amount().amount()))
                 .toList());
         Set<UUID> expected = monthTransactions.stream().map(Transaction::id).collect(Collectors.toSet());
@@ -79,7 +85,7 @@ public class SpendingAnalyst {
                 SpendingAnalysis analysis = converter.convert(content);
                 problem = validate(analysis, expected);
                 if (problem == null) {
-                    return analysis;
+                    return new SpendingAnalysis(analysis.categorized(), vault.reveal(analysis.headline()));
                 }
             } catch (RuntimeException e) {
                 problem = "it was not valid JSON for the requested schema";

@@ -10,6 +10,7 @@ import dev.jaderss.banking.core.BankingTestSupport;
 import dev.jaderss.banking.core.CustomerId;
 import dev.jaderss.banking.core.TransactionRepository;
 import dev.jaderss.banking.core.TransactionSearch;
+import dev.jaderss.banking.privacy.PiiVaults;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.YearMonth;
@@ -28,7 +29,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import({BankingTestSupport.class, SpendingAnalyst.class, SpendingAnalystTest.ScriptedModel.class})
+@Import({BankingTestSupport.class, SpendingAnalyst.class, PiiVaults.class, SpendingAnalystTest.ScriptedModel.class})
 class SpendingAnalystTest {
 
     private static final CustomerId ADA = new CustomerId("CUST-0001");
