@@ -1,11 +1,16 @@
+include:
+  - compose/postgres.yaml
+
 services:
-  postgres:
-    image: 'pgvector/pgvector:0.8.7-pg18'
-    labels:
-      org.springframework.boot.service-connection: postgres
+  banking-assistant:
+    build: .
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
-      - 'POSTGRES_DB=banking'
-      - 'POSTGRES_USER=banking'
-      - 'POSTGRES_PASSWORD=local-only'
+      - 'OPENAI_API_KEY=${OPENAI_API_KEY:?set OPENAI_API_KEY}'
+      - 'SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/banking'
+      - 'SPRING_DATASOURCE_USERNAME=banking'
+      - 'SPRING_DATASOURCE_PASSWORD=local-only'
     ports:
-      - '5432'
+      - '8080:8080'

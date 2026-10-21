@@ -61,13 +61,20 @@ public class KnowledgeBaseLoader implements ApplicationRunner {
                 .filter(id -> !current.contains(id)
                         || changed.stream().anyMatch(doc -> doc.getId().equals(id)))
                 .toList();
-        if (!obsolete.isEmpty()) {
-            vectorStore.delete(obsolete);
+        try {
+            if (!obsolete.isEmpty()) {
+                vectorStore.delete(obsolete);
+            }
+            if (!changed.isEmpty()) {
+                vectorStore.add(changed);
+            }
+            log.info("Knowledge base has {} sections, {} embedded on this start", sections.size(), changed.size());
+        } catch (RuntimeException e) {
+            log.error(
+                    "Knowledge base not updated, policy answers may be missing: {}",
+                    e.getClass().getSimpleName(),
+                    e);
         }
-        if (!changed.isEmpty()) {
-            vectorStore.add(changed);
-        }
-        log.info("Knowledge base has {} sections, {} embedded on this start", sections.size(), changed.size());
     }
 
     static List<Document> sections(Resource resource) throws IOException {

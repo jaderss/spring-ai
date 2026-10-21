@@ -1,0 +1,35 @@
+### Ask the assistant about balances
+POST http://localhost:8080/assistant/chat
+Content-Type: application/json
+X-Customer-Id: CUST-0001
+
+{"conversationId": "demo", "message": "What are my account balances?"}
+
+### Ask about a fee, the reply lists the documents it used
+POST http://localhost:8080/assistant/chat
+Content-Type: application/json
+X-Customer-Id: CUST-0001
+
+{"conversationId": "demo", "message": "Is there an overdraft fee?"}
+
+### Ask for a transfer, the assistant can only propose it
+POST http://localhost:8080/assistant/chat
+Content-Type: application/json
+X-Customer-Id: CUST-0001
+
+{"conversationId": "demo", "message": "Move 100 dollars from ACME-CHK-0001 to my savings"}
+
+> {% client.global.set("proposalId", response.body.pendingProposals[0].proposalId); %}
+
+### Confirm the proposal, sending the same Idempotency-Key again returns the same transfer
+POST http://localhost:8080/transfers/proposals/{{proposalId}}/confirm
+X-Customer-Id: CUST-0001
+Idempotency-Key: demo-confirm-0001
+
+### List pending proposals
+GET http://localhost:8080/transfers/proposals
+X-Customer-Id: CUST-0001
+
+### Monthly spending summary with model categories and computed totals
+GET http://localhost:8080/accounts/ACME-CHK-0001/spending?month=2026-09
+X-Customer-Id: CUST-0001
