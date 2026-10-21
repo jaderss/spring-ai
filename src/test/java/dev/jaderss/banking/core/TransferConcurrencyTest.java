@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(BankingTestConfiguration.class)
+@Import(BankingTestSupport.class)
 @Transactional(propagation = Propagation.NOT_SUPPORTED)
 class TransferConcurrencyTest {
 

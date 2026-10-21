@@ -1,6 +1,6 @@
 package dev.jaderss.banking.core;
 
-import static dev.jaderss.banking.core.BankingTestConfiguration.NOW;
+import static dev.jaderss.banking.core.BankingTestSupport.NOW;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
@@ -20,7 +20,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(BankingTestConfiguration.class)
+@Import(BankingTestSupport.class)
 class CoreBankingTest {
 
     private static final Instant SEPTEMBER = Instant.parse("2026-09-01T00:00:00Z");

@@ -18,9 +18,9 @@ import org.springframework.context.annotation.Import;
     TransferProposalRepository.class,
     TransferProposalService.class
 })
-class BankingTestConfiguration {
+public class BankingTestSupport {
 
-    static final Instant NOW = Instant.parse("2026-10-20T12:00:00Z");
+    public static final Instant NOW = Instant.parse("2026-10-20T12:00:00Z");
 
     @Bean
     Clock clock() {

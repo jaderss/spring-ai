@@ -1,6 +1,6 @@
 package dev.jaderss.banking.core;
 
-import static dev.jaderss.banking.core.BankingTestConfiguration.NOW;
+import static dev.jaderss.banking.core.BankingTestSupport.NOW;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Import;
 
 @JdbcTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(BankingTestConfiguration.class)
+@Import(BankingTestSupport.class)
 class TransferProposalServiceTest {
 
     private static final CustomerId ADA = new CustomerId("CUST-0001");

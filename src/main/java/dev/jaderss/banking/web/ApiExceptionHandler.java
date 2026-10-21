@@ -1,6 +1,7 @@
 package dev.jaderss.banking.web;
 
 import dev.jaderss.banking.core.TransferRejectedException;
+import dev.jaderss.banking.insights.ModelOutputRejectedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,6 +23,14 @@ public class ApiExceptionHandler extends ResponseEntityExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, e.getMessage());
         problem.setTitle("Transfer rejected");
         problem.setProperty("reason", e.reason().name());
+        return problem;
+    }
+
+    @ExceptionHandler(ModelOutputRejectedException.class)
+    ProblemDetail modelOutputRejected(ModelOutputRejectedException e) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_GATEWAY, "The language model did not return a usable answer. Try again later.");
+        problem.setTitle("Model output invalid");
         return problem;
     }
 
