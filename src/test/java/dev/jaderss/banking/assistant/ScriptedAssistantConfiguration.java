@@ -21,6 +21,11 @@ public class ScriptedAssistantConfiguration {
     }
 
     @Bean
+    FakeEmbeddingModel fakeEmbeddingModel() {
+        return new FakeEmbeddingModel();
+    }
+
+    @Bean
     @Primary
     Clock fixedClock() {
         return Clock.fixed(NOW, ZoneOffset.UTC);

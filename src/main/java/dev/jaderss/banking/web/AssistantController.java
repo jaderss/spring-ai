@@ -27,9 +27,10 @@ public class AssistantController {
     public AssistantReply chat(
             @RequestHeader(Headers.CUSTOMER) String customerId, @RequestBody AssistantRequest request) {
         CustomerId customer = new CustomerId(customerId);
-        String reply = assistant.reply(customer, request.conversationId(), request.message());
+        BankingAssistant.Answer answer = assistant.reply(customer, request.conversationId(), request.message());
         return new AssistantReply(
-                reply,
+                answer.text(),
+                answer.sources(),
                 proposals.pending(customer).stream().map(ProposalView::of).toList());
     }
 
@@ -49,5 +50,5 @@ public class AssistantController {
         }
     }
 
-    public record AssistantReply(String reply, List<ProposalView> pendingProposals) {}
+    public record AssistantReply(String reply, List<String> sources, List<ProposalView> pendingProposals) {}
 }

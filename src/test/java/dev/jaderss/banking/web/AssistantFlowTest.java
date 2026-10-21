@@ -2,8 +2,8 @@ package dev.jaderss.banking.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import dev.jaderss.banking.BankingAssistantTest;
 import dev.jaderss.banking.assistant.ProposalView;
-import dev.jaderss.banking.assistant.ScriptedAssistantConfiguration;
 import dev.jaderss.banking.assistant.ScriptedChatModel;
 import dev.jaderss.banking.web.AssistantController.AssistantReply;
 import dev.jaderss.banking.web.AssistantController.AssistantRequest;
@@ -14,19 +14,14 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.messages.ToolResponseMessage;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.web.client.RestClient;
 
-@SpringBootTest(
-        webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {"spring.ai.model.chat=none", "spring.ai.openai.api-key=test-key"})
-@Import(ScriptedAssistantConfiguration.class)
+@BankingAssistantTest
 class AssistantFlowTest {
 
     private final RestClient client;
@@ -111,6 +106,19 @@ class AssistantFlowTest {
                 .asString()
                 .contains("no account ACME-CHK-0002")
                 .doesNotContain("708");
+    }
+
+    @Test
+    void policyAnswersCarryTheSourcesThatWereRetrieved() {
+        model.thenReply(
+                "There is no overdraft fee; payments that would overdraw are declined [fee-schedule#Overdraft].");
+
+        AssistantReply reply = chat("CUST-0001", "Is there an overdraft fee?");
+
+        assertThat(reply.sources()).first().isEqualTo("fee-schedule#Overdraft");
+        assertThat(model.prompts().getLast().getUserMessage().getText())
+                .contains("[fee-schedule#Overdraft]")
+                .contains("no overdraft fee");
     }
 
     private List<String> lastToolResults() {
