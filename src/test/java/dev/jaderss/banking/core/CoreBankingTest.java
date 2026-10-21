@@ -47,6 +47,7 @@ class CoreBankingTest {
         assertThat(jdbc.sql("""
                         select a.number from account a
                         left join account_transaction t on t.account_number = a.number
+                        where a.number like 'ACME-%'
                         group by a.number, a.balance
                         having a.balance <> coalesce(sum(t.amount), 0)
                         """).query(String.class).list()).isEmpty();

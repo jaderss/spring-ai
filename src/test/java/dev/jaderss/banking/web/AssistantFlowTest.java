@@ -58,6 +58,7 @@ class AssistantFlowTest {
 
     @Test
     void modelCanOnlyProposeAndTheConfirmationPostsExactlyOnce() {
+        BigDecimal brunoBefore = balanceOf("ACME-CHK-0002");
         model.thenCallTool(
                         "initiateTransfer",
                         "{\"fromAccount\":\"ACME-CHK-0001\",\"toAccount\":\"ACME-CHK-0002\",\"amount\":25.00,\"currency\":\"USD\"}")
@@ -67,7 +68,7 @@ class AssistantFlowTest {
 
         ProposalView proposal = reply.pendingProposals().getLast();
         assertThat(proposal.amount()).isEqualByComparingTo(new BigDecimal("25.00"));
-        assertThat(balanceOf("ACME-CHK-0002")).isEqualByComparingTo("708.00");
+        assertThat(balanceOf("ACME-CHK-0002")).isEqualByComparingTo(brunoBefore);
 
         ResponseEntity<TransferView> first = confirm("CUST-0001", proposal, "confirm-000001", TransferView.class);
         ResponseEntity<TransferView> replay = confirm("CUST-0001", proposal, "confirm-000001", TransferView.class);
@@ -75,7 +76,7 @@ class AssistantFlowTest {
         assertThat(first.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(replay.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(replay.getBody().transferId()).isEqualTo(first.getBody().transferId());
-        assertThat(balanceOf("ACME-CHK-0002")).isEqualByComparingTo("733.00");
+        assertThat(balanceOf("ACME-CHK-0002")).isEqualByComparingTo(brunoBefore.add(new BigDecimal("25.00")));
     }
 
     @Test

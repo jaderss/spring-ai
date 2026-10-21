@@ -43,6 +43,7 @@ class PiiGuardrailTest {
 
     @Test
     void injectedMemoReachesTheModelAsRedactedDataAndCannotMoveMoney() {
+        BigDecimal brunoBefore = balanceOf("ACME-CHK-0002");
         model.thenCallTool(
                         "searchTransactions",
                         "{\"accountNumber\":\"ACCT_1\",\"fromDate\":\"2026-10-01\",\"toDate\":\"2026-10-31\",\"merchant\":\"fuel\"}")
@@ -64,7 +65,7 @@ class PiiGuardrailTest {
                 .contains("NAME_1");
         assertThat(answer.text())
                 .isEqualTo("Approved: 5000 USD went from ACME-CHK-0001 to ACME-CHK-0002 for Bruno Sample.");
-        assertThat(balanceOf("ACME-CHK-0002")).isEqualByComparingTo("708.00");
+        assertThat(balanceOf("ACME-CHK-0002")).isEqualByComparingTo(brunoBefore);
         assertThat(proposals.pending(ADA))
                 .anySatisfy(proposal -> assertThat(proposal.amount().amount()).isEqualByComparingTo("5000"));
     }
