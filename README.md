@@ -1,6 +1,6 @@
 # Banking assistant on Spring AI
 
-[![CI](https://github.com/jaderss/spring-ai-banking-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/jaderss/spring-ai-banking-assistant/actions/workflows/ci.yml)
+[![CI](https://github.com/jaderss/spring-ai-banking-assistant/actions/workflows/ci.yml/badge.svg)](https://github.com/jaderss/spring-ai-banking-assistant/actions/workflows/ci.yml) [![Quality gate](https://sonarcloud.io/api/project_badges/measure?project=jaderss_spring-ai-banking-assistant&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=jaderss_spring-ai-banking-assistant)
 
 A chat assistant for a fictional bank, built on Spring AI 2.0, Spring Boot 4.1 and Java 25. It answers questions about a customer's own accounts through tool calls, explains fees and terms from the bank's documents with citations, proposes transfers that only the customer can confirm, and keeps account numbers and names away from the model.
 
