@@ -1,0 +1,11 @@
+services:
+  postgres:
+    image: 'pgvector/pgvector:0.8.7-pg18'
+    labels:
+      org.springframework.boot.service-connection: postgres
+    environment:
+      - 'POSTGRES_DB=banking'
+      - 'POSTGRES_USER=banking'
+      - 'POSTGRES_PASSWORD=local-only'
+    ports:
+      - '5432'
